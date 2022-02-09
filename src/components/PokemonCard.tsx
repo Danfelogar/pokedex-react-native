@@ -1,5 +1,8 @@
-import React from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import ImageColors from 'react-native-image-colors';
+
 import { SimplePokemon } from '../interfaces/pokemonInterfaces';
 import { FadeInImage } from './FadeInImage';
 
@@ -10,11 +13,35 @@ interface Props {
 }
 
 export const PokemonCard = ({ pokemon }: Props) => {
+
+    const [bgColor, setBgColor] = useState('gray');
+    // para saber si el componente esta montado
+    const isMounted = useRef(true);
+
+    useEffect(() => {
+        ImageColors.getColors( pokemon.picture, {fallback: 'gray'} )
+        .then( colors => {
+            //si el componente esta desmontado no hagas nada para protegernos de la re-renderizacion
+            if( !isMounted.current ) return;
+
+            (colors.platform === 'android')
+                ? setBgColor( colors.dominant || 'gray' )
+                : setBgColor( colors.background || 'gray' )
+        }).catch((err:any) => console.log(err));
+        // el  useEffect se usa el return cuando un componente se  demonta
+        return () => {
+            isMounted.current = false
+        }
+    }, []);
+
+    const navigation = useNavigation();
+
     return(
-        <TouchableOpacity activeOpacity={ 0.9 }>
+        <TouchableOpacity onPress={ () => navigation.navigate('PokemonScreen', { simplePokemon: pokemon, color: bgColor }) } activeOpacity={ 0.9 }>
             <View style={{
                 ...styles.cardContainer,
                 width: windowWidth * 0.4,
+                backgroundColor: bgColor,
             }}>
                 {/* Nombre del pokemon y ID */}
                 <View>
@@ -43,7 +70,6 @@ export const PokemonCard = ({ pokemon }: Props) => {
 const styles = StyleSheet.create({
     cardContainer: {
         marginHorizontal: 10,
-        backgroundColor: 'red',
         height: 120,
         width: 160,
         marginBottom: 25,
