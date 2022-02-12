@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         top: 20,
-        left: 10
+        left: 10,
     },
     pokeball:{
         height: 100,
